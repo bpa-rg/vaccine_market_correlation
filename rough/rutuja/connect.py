@@ -1,5 +1,7 @@
 
 import py_connect
+import json
+from datetime import date
 
 if __name__ == "__main__":
     cursor=py_connect.db.cursor()
@@ -43,8 +45,18 @@ else:
      sql = '''create table Attendance (student_name VARCHAR(15),date Varchar(15))'''
      cursor.execute(sql)
 
+
+stmt = "SHOW TABLES LIKE 'Proxy_students'"
+cursor.execute(stmt)
+result = cursor.fetchone()
+if result:
+    print('Table exists')
+else:
+     sql = '''create table  rutuja_test.Proxy_students(student_name VARCHAR(15),date Varchar(15),reason Varchar(50))'''
+     cursor.execute(sql)
+
 student_name=input('enter student name')
-date=input('enter date')
+date=date.today()
 if student_name in data2:
     sql = '''select student_name from rutuja_test.Attendance'''
     cursor.execute(sql)
@@ -52,30 +64,62 @@ if student_name in data2:
     attend_data2=[i[0] for i in attend_data]
     if student_name in attend_data2:
         print('proxy')
+
+        dictionary = {
+                         "name": student_name,
+                         "date": date,
+                         "reason":'proxy'
+
+        }
+
+        json_object = json.dumps(dictionary, indent=4)
+        with open("sudent_record.json", "w") as outfile:
+            outfile.write(json_object)
+
+        new_file = open('sudent_record.json', )
+        data = json.load(new_file)
+        print(dictionary)
+        new_file.close()
     else:
         sql = '''insert into rutuja_test.Attendance(student_name,date)values(%s,%s)'''
         data3=(student_name,date)
         cursor.execute(sql,data3)
         print("attendance successfully taken")
 else:
+
+    dictionary= {
+                 "name": student_name,
+                 "date": date,
+                 "reason":"student doesnt exits in list",
+
+                }
     print("student doesnt exits in list")
 
+    json_object = json.dumps(dictionary, indent=4)
+    with open("student_record.json", "w") as outfile:
+        outfile.write(json_object)
 
-"""
-for x in data2:
-    if stud_name==data2:
-        flag= 0
-        break
+    new_file = open('student_record.json', )
+    data = json.load(new_file)
 
-    else:
-        flag= 1
+    print(data)
+    student_name = dictionary["name"]
+    data = dictionary["date"]
+    reason = dictionary["reason"]
 
+    sql = '''insert into rutuja_test.Proxy_students(student_name,date,reason)values(%s,%s,%s)'''
+    proxy1 = (student_name, date, reason)
+    cursor.execute(sql, proxy1)
 
-if(flag==0):
-    sql = '''insert into  rutuja_test.Attendance values(stud_name,date)'''
-    cursor.execute(sql)
-else:
-    print('student doesnt exist')
-"""
+    new_file.close()
+
+#student_name=dictionary["name"]
+#data=dictionary["date"]
+#reason=dictionary["reason"]
+
+#sql = '''insert into rutuja_test.Proxy_students(student_name,date,reason)values(%s,%s,%s)'''
+#proxy1=(student_name,date,reason)
+#cursor.execute(sql,proxy1)
+
 py_connect.db.commit()
 cursor.close()
