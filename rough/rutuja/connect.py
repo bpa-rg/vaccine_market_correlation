@@ -1,7 +1,9 @@
-
 import py_connect
-import json
+import python_funtions
+import json_funtions
 from datetime import date
+
+date = str(date.today())
 
 if __name__ == "__main__":
     cursor=py_connect.db.cursor()
@@ -13,113 +15,51 @@ if __name__ == "__main__":
     sql='''select student_name from rutuja_test.Student'''
     cursor.execute(sql)
     data1=cursor.fetchall()
-    #print(data1)
     data2 = list(sum(data1,()))
     print(data2)
 
-def max_len(list):
-        max=-1
-        for i in data2:
-            if len(i) > max:
-               max = len(i)
-        return max;
-
-result=max_len(data2)
+#maximun length funtion call
+result=python_funtions.max_len(data2)
 print('max lenght is=',result)
 
-def largest_name(int):
-    for i in data2:
-        if len(i) == result:
-            print(i)
+#max lenght names funtion call
+python_funtions.largest_name(result,data2)
 
-largest_name(result)
+#check table
+python_funtions.check_table(cursor)
 
-#new_tablename=input('enter table name')
-
-stmt = "SHOW TABLES LIKE 'Attendance'"
-cursor.execute(stmt)
-result = cursor.fetchone()
-if result:
-    print('Table exists')
-else:
-     sql = '''create table Attendance (student_name VARCHAR(15),date Varchar(15))'''
-     cursor.execute(sql)
-
-
-stmt = "SHOW TABLES LIKE 'Proxy_students'"
-cursor.execute(stmt)
-result = cursor.fetchone()
-if result:
-    print('Table exists')
-else:
-     sql = '''create table  rutuja_test.Proxy_students(student_name VARCHAR(15),date Varchar(15),reason Varchar(50))'''
-     cursor.execute(sql)
+#check whether the student exists in the student table
+#if exists then make the entry if entry is already made then add proxy.
 
 student_name=input('enter student name')
-date=date.today()
 if student_name in data2:
     sql = '''select student_name from rutuja_test.Attendance'''
     cursor.execute(sql)
     attend_data = cursor.fetchall()
     attend_data2=[i[0] for i in attend_data]
+
     if student_name in attend_data2:
         print('proxy')
-
-        dictionary = {
-                         "name": student_name,
-                         "date": date,
-                         "reason":'proxy'
-
-        }
-
-        json_object = json.dumps(dictionary, indent=4)
-        with open("sudent_record.json", "w") as outfile:
-            outfile.write(json_object)
-
-        new_file = open('sudent_record.json', )
-        data = json.load(new_file)
-        print(dictionary)
-        new_file.close()
+        reason='proxy'
+        #write into new json file and then write in proxy table.
+        file_name=json_funtions.write_funtion(student_name,date,reason)
+        #read from json file
+        json_funtions.read_funtion(file_name)
     else:
         sql = '''insert into rutuja_test.Attendance(student_name,date)values(%s,%s)'''
         data3=(student_name,date)
         cursor.execute(sql,data3)
         print("attendance successfully taken")
+
 else:
-
-    dictionary= {
-                 "name": student_name,
-                 "date": date,
-                 "reason":"student doesnt exits in list",
-
-                }
+    #if student doesnot exist then add in proxy table that the student doesnot exist.
+    reason="student doesnt exits in list"
     print("student doesnt exits in list")
 
-    json_object = json.dumps(dictionary, indent=4)
-    with open("student_record.json", "w") as outfile:
-        outfile.write(json_object)
-
-    new_file = open('student_record.json', )
-    data = json.load(new_file)
-
-    print(data)
-    student_name = dictionary["name"]
-    data = dictionary["date"]
-    reason = dictionary["reason"]
-
-    sql = '''insert into rutuja_test.Proxy_students(student_name,date,reason)values(%s,%s,%s)'''
-    proxy1 = (student_name, date, reason)
-    cursor.execute(sql, proxy1)
-
-    new_file.close()
-
-#student_name=dictionary["name"]
-#data=dictionary["date"]
-#reason=dictionary["reason"]
-
-#sql = '''insert into rutuja_test.Proxy_students(student_name,date,reason)values(%s,%s,%s)'''
-#proxy1=(student_name,date,reason)
-#cursor.execute(sql,proxy1)
+    #write in new json file and then in proxy table
+    file_name=json_funtions.write_funtion(student_name,date,reason)
+    #read from json file
+    json_funtions.read_funtion(file_name)
 
 py_connect.db.commit()
 cursor.close()
