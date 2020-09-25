@@ -2,6 +2,11 @@ import py_connect
 import python_funtions
 import json_funtions
 from datetime import date
+import upload_file_to_S3_
+import find
+import read_from_S3
+#import read_from_S3
+#import json
 
 date = str(date.today())
 
@@ -17,13 +22,6 @@ if __name__ == "__main__":
     data1=cursor.fetchall()
     data2 = list(sum(data1,()))
     print(data2)
-
-#maximun length funtion call
-result=python_funtions.max_len(data2)
-print('max lenght is=',result)
-
-#max lenght names funtion call
-python_funtions.largest_name(result,data2)
 
 #check table
 python_funtions.check_table(cursor)
@@ -43,6 +41,14 @@ if student_name in data2:
         reason='proxy'
         #write into new json file and then write in proxy table.
         file_name=json_funtions.write_funtion(student_name,date,reason)
+        file_location='C:\\Users\\SAI\\PycharmProjects\\pythonProject\\'
+        file_location+=file_name
+        sql = '''insert into rutuja_test.proxy_list(file_name,r_read)values(%s,%s)'''
+        data3 = (file_name, 1)
+        cursor.execute(sql, data3)
+        print("filename successfully taken")
+      #  uploaded = upload_file_to_S3_.upload_to_aws(file_location,'bpa-rg-rough', 'devs/rutuja', file_name)
+        print(file_name)
         #read from json file
         json_funtions.read_funtion(file_name)
     else:
@@ -56,10 +62,28 @@ else:
     reason="student doesnt exits in list"
     print("student doesnt exits in list")
 
+
     #write in new json file and then in proxy table
     file_name=json_funtions.write_funtion(student_name,date,reason)
+
+    file_location = 'C:\\Users\\SAI\\PycharmProjects\\pythonProject\\'
+    file_location += file_name
+    sql = '''insert into rutuja_test.proxy_list(file_name,r_read)values(%s,%s)'''
+    data3 = (file_name, 1)
+    cursor.execute(sql, data3)
+    print("filename successfully taken")
+
+    # uploaded = upload_file_to_S3_.upload_to_aws(file_location, 'bpa-rg-rough', 'devs/rutuja', file_name)
+    print(file_name)
+
     #read from json file
     json_funtions.read_funtion(file_name)
+
+#take parameter from user.
+dbname=input("enter database")
+
+#find the file name from s3
+find.read_file_name(dbname)
 
 py_connect.db.commit()
 cursor.close()
